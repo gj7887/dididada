@@ -3,17 +3,20 @@ FROM node:18-alpine AS frontend-builder
 
 WORKDIR /app/frontend
 
-# Copy frontend package files
-COPY frontend/package*.json ./
+# Install pnpm
+RUN npm install -g pnpm
+
+# Copy frontend package files and env files
+COPY frontend/pnpm-lock.yaml frontend/package*.json frontend/.env* ./
 
 # Install dependencies
-RUN npm install
+RUN pnpm install --frozen-lockfile
 
 # Copy frontend source
 COPY frontend/ ./
 
 # Build frontend
-RUN npm run build:prod
+RUN pnpm run build:prod
 
 # Go build stage
 FROM golang:1.20-alpine AS builder

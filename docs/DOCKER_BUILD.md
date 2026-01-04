@@ -81,6 +81,10 @@ docker tag h-ui h-ui:local
 
 **注意**: Dockerfile.ci 会自动构建前端（Vue）和后端（Go）。
 
+- 使用 pnpm 作为包管理器（与项目一致）
+- 首次构建会下载所有依赖，时间较长（约 5-10 分钟）
+- 后续构建利用 Docker 缓存会更快
+
 ```bash
 # 构建 amd64 版本
 docker build -f Dockerfile.ci \
@@ -94,8 +98,6 @@ docker build -f Dockerfile.ci \
   --build-arg TARGETARCH=arm64 \
   -t h-ui:local-arm64 .
 ```
-
-构建时间较长（需要构建前端），请耐心等待。
 
 #### 方法 3: 手动构建二进制文件
 
@@ -128,8 +130,10 @@ docker build -t h-ui:local .
 
 1. 检查 `frontend/package.json` 中的依赖是否正确
 2. 确保 Node.js 版本符合要求（>=18.12.0）
-3. 查看构建日志中的 npm 错误信息
-4. 可以尝试在本地运行 `cd frontend && npm run build:prod` 测试
+3. 查看构建日志中的 pnpm 错误信息
+4. 确保项目使用 pnpm（不是 npm）
+5. 可以尝试在本地运行 `cd frontend && pnpm run build:prod` 测试
+6. 检查 `pnpm-lock.yaml` 是否存在且有效
 
 ### Go 构建问题
 

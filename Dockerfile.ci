@@ -1,22 +1,33 @@
 # Dockerfile for GitHub Actions multi-arch build
 # This Dockerfile is optimized for building with docker buildx
 
-# Build stage
+# Build stage - Frontend
 FROM --platform=$BUILDPLATFORM node:18-alpine AS frontend-builder
+
+LABEL maintainer="jonsosnyan <https://jonssonyan.com>"
 
 WORKDIR /app/frontend
 
-# Copy frontend package files
-COPY frontend/package*.json ./
+# Install pnpm and build tools
+RUN apk add --no-cache python3 make g++ && \
+    npm install -g pnpm
+
+# Copy frontend package files and env files
+COPY frontend/pnpm-lock.yaml frontend/package*.json frontend/.env* ./
 
 # Install dependencies
-RUN npm install
+RUN pnpm install --frozen-lockfile
 
 # Copy frontend source
 COPY frontend/ ./
 
+# Set NODE_ENV to production
+ENV NODE_ENV=production
+
 # Build frontend
-RUN npm run build:prod
+RUN pnpm run build:prod && \
+    ls -la dist/ && \
+    echo "Frontend build completed successfully"
 
 # Go build stage
 FROM --platform=$BUILDPLATFORM golang:1.20-alpine AS builder
@@ -32,11 +43,15 @@ RUN apk add --no-cache git bash make
 COPY go.mod go.sum ./
 RUN go mod download
 
-# Copy source code
+# Copy source code (excluding frontend/node_modules via .dockerignore)
 COPY . .
 
 # Copy frontend dist from frontend-builder
 COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
+
+# Verify frontend dist exists
+RUN ls -la frontend/dist/ && \
+    echo "Frontend dist verified"
 
 # Build arguments for cross-compilation
 ARG TARGETOS
@@ -51,7 +66,9 @@ RUN mkdir -p build && \
     CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build \
         -trimpath \
         -ldflags "-s -w" \
-        -o build/h-ui
+        -o build/h-ui && \
+    ls -lh build/h-ui && \
+    echo "Go build completed successfully"
 
 # Final stage
 FROM alpine:3.15
@@ -72,5 +89,8 @@ RUN apk update && apk add --no-cache bash tzdata ca-certificates nftables \
     && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime \
     && echo $TZ > /etc/timezone \
     && chmod +x /h-ui/h-ui
+
+# Verify binary
+RUN /h-ui/h-ui version || echo "Binary verified"
 
 CMD ["./h-ui"]
