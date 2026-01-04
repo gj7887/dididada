@@ -62,8 +62,6 @@ FROM gcr.io/distroless/cc-debian12
 
 LABEL maintainer="jonsosnyan <https://jonssonyan.com>"
 
-WORKDIR /h-ui
-
 # Set environment variables
 ENV TZ=Asia/Shanghai \
     GIN_MODE=release
@@ -71,14 +69,8 @@ ENV TZ=Asia/Shanghai \
 # Copy binary from builder
 COPY --from=go-builder /app/build/h-ui /h-ui/h-ui
 
-# Create necessary directories
-RUN mkdir -p /h-ui/bin /h-ui/data /h-ui/export /h-ui/logs
-
-# Set volumes
+# Set volumes (directories will be created automatically by Docker)
 VOLUME ["/h-ui/bin", "/h-ui/data", "/h-ui/export", "/h-ui/logs"]
-
-# Set user to non-root for security
-USER 65532:65532
 
 # Expose default port
 EXPOSE 8081
