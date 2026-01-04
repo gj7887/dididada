@@ -77,17 +77,17 @@ docker load -i h-ui-image.tar
 docker tag h-ui h-ui:local
 ```
 
-#### 方法 2: 本地构建 Dockerfile.build（多阶段构建）
+#### 方法 2: 本地构建 Dockerfile.ci（CI 优化的多阶段构建）
 
 ```bash
 # 构建 amd64 版本
-docker build -f Dockerfile.build \
+docker build -f Dockerfile.ci \
   --build-arg TARGETOS=linux \
   --build-arg TARGETARCH=amd64 \
   -t h-ui:local .
 
 # 构建 arm64 版本
-docker build -f Dockerfile.build \
+docker build -f Dockerfile.ci \
   --build-arg TARGETOS=linux \
   --build-arg TARGETARCH=arm64 \
   -t h-ui:local-arm64 .
@@ -95,23 +95,7 @@ docker build -f Dockerfile.build \
 
 #### 方法 3: 手动构建二进制文件
 
-如果需要在本地构建 Docker 镜像：
-
-### 构建 Dockerfile.build（多阶段构建）
-
-```bash
-# 构建 amd64 版本
-docker build -f Dockerfile.build \
-  --build-arg TARGETOS=linux \
-  --build-arg TARGETARCH=amd64 \
-  -t h-ui:local .
-
-# 构建 arm64 版本
-docker build -f Dockerfile.build \
-  --build-arg TARGETOS=linux \
-  --build-arg TARGETARCH=arm64 \
-  -t h-ui:local-arm64 .
-```
+如果需要先构建二进制文件再打包 Docker 镜像：
 
 ### 手动构建二进制文件
 

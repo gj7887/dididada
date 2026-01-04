@@ -56,7 +56,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: ./Dockerfile.build
+          file: ./Dockerfile.ci
           platforms: linux/amd64
           push: false
           tags: ${{ steps.meta.outputs.tags }}
@@ -71,7 +71,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: ./Dockerfile.build
+          file: ./Dockerfile.ci
           platforms: linux/arm64
           push: false
           tags: ${{ steps.meta.outputs.tags }}
