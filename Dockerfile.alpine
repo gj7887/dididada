@@ -57,8 +57,8 @@ RUN mkdir -p build && \
     ls -lh build/h-ui && \
     echo "Go build completed successfully"
 
-# Runtime stage - Distroless for security
-FROM gcr.io/distroless/cc-debian12
+# Runtime stage - Alpine Linux
+FROM alpine:3.19
 
 LABEL maintainer="jonsosnyan <https://jonssonyan.com>"
 
@@ -71,17 +71,25 @@ ENV TZ=Asia/Shanghai \
 # Copy binary from builder
 COPY --from=go-builder /app/build/h-ui /h-ui/h-ui
 
+# Install runtime dependencies
+RUN apk add --no-cache \
+        bash \
+        tzdata \
+        ca-certificates \
+        nftables \
+    && rm -rf /var/cache/apk/* \
+    && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime \
+    && echo $TZ > /etc/timezone \
+    && chmod +x /h-ui/h-ui
+
 # Create necessary directories
 RUN mkdir -p /h-ui/bin /h-ui/data /h-ui/export /h-ui/logs
 
 # Set volumes
 VOLUME ["/h-ui/bin", "/h-ui/data", "/h-ui/export", "/h-ui/logs"]
 
-# Set user to non-root for security
-USER 65532:65532
-
 # Expose default port
 EXPOSE 8081
 
 # Run the application
-ENTRYPOINT ["/h-ui/h-ui"]
+CMD ["/h-ui/h-ui"]
