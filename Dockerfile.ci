@@ -2,6 +2,23 @@
 # This Dockerfile is optimized for building with docker buildx
 
 # Build stage
+FROM --platform=$BUILDPLATFORM node:18-alpine AS frontend-builder
+
+WORKDIR /app/frontend
+
+# Copy frontend package files
+COPY frontend/package*.json ./
+
+# Install dependencies
+RUN npm install
+
+# Copy frontend source
+COPY frontend/ ./
+
+# Build frontend
+RUN npm run build:prod
+
+# Go build stage
 FROM --platform=$BUILDPLATFORM golang:1.20-alpine AS builder
 
 LABEL maintainer="jonsosnyan <https://jonssonyan.com>"
@@ -17,6 +34,9 @@ RUN go mod download
 
 # Copy source code
 COPY . .
+
+# Copy frontend dist from frontend-builder
+COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
 
 # Build arguments for cross-compilation
 ARG TARGETOS

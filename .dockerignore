@@ -1,0 +1,47 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Documentation
+README*.md
+LICENSE
+docs/
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+
+# Docker
+Dockerfile*
+docker-compose.yml
+.dockerignore
+
+# Build artifacts
+build/
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Tests
+*_test.go
+test/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Node modules (not needed in Docker context for multi-stage build)
+# frontend/node_modules/
+# frontend/dist/

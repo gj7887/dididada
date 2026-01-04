@@ -79,6 +79,8 @@ docker tag h-ui h-ui:local
 
 #### 方法 2: 本地构建 Dockerfile.ci（CI 优化的多阶段构建）
 
+**注意**: Dockerfile.ci 会自动构建前端（Vue）和后端（Go）。
+
 ```bash
 # 构建 amd64 版本
 docker build -f Dockerfile.ci \
@@ -92,6 +94,8 @@ docker build -f Dockerfile.ci \
   --build-arg TARGETARCH=arm64 \
   -t h-ui:local-arm64 .
 ```
+
+构建时间较长（需要构建前端），请耐心等待。
 
 #### 方法 3: 手动构建二进制文件
 
@@ -116,19 +120,40 @@ docker build -t h-ui:local .
 1. 检查 GitHub Actions 日志
 2. 验证工作流文件语法
 3. 检查是否有构建权限问题
+4. 确保前端构建成功（Dockerfile 会自动构建前端）
+
+### 前端构建问题
+
+如果前端构建失败：
+
+1. 检查 `frontend/package.json` 中的依赖是否正确
+2. 确保 Node.js 版本符合要求（>=18.12.0）
+3. 查看构建日志中的 npm 错误信息
+4. 可以尝试在本地运行 `cd frontend && npm run build:prod` 测试
+
+### Go 构建问题
+
+如果 Go 编译失败：
+
+1. 检查 `go.mod` 文件是否存在
+2. 确保依赖已正确下载
+3. 检查是否有编译错误
+4. 确保前端 dist 目录已正确生成（frontend/embed.go 需要它）
 
 ### 多架构镜像问题
 
 1. 确保 QEMU 模拟器正确设置
 2. 验证目标平台是否支持（当前支持 linux/amd64 和 linux/arm64）
 3. 检查构建日志中是否所有架构都成功构建
+4. 注意：前端构建在多架构环境下可能需要更多时间
 
 ## 最佳实践
 
 1. **使用多架构工作流**: 推荐 `docker-build-multiarch.yml`，它更高效且符合 Docker 最佳实践
 2. **缓存利用**: 工作流已启用 GitHub Actions 缓存，加快后续构建速度
 3. **版本标签**: 正式发布时使用 Git tag 创建 release，自动生成语义化版本标签
-4. **本地使用**: 构建完成后，推荐本地使用 Dockerfile.build 构建镜像
+4. **本地使用**: 推荐本地使用 Dockerfile.ci 构建镜像（已包含前端构建）
+5. **构建时间**: Dockerfile 需要构建前端和后端，首次构建时间较长（约 5-10 分钟）
 
 ## 架构支持
 
